@@ -38,7 +38,7 @@ import { StandardTheme, StandardCompactTheme, PaperTheme } from './theme'
 import { CoreConfigProvider } from './config'
 import { AppHotkeyProvider } from './hotkeys'
 import { TaskCompletionContextMenu, CommonOptionsContextMenu, TabManagementContextMenu } from './tabContextMenu'
-import { LastCLIHandler } from './cli'
+import { LastCLIHandler, ProfileCLIHandler } from './cli'
 
 import 'perfect-scrollbar/css/perfect-scrollbar.css'
 import 'ng2-dnd/bundles/style.css'
@@ -53,6 +53,7 @@ const PROVIDERS = [
     { provide: TabContextMenuItemProvider, useClass: TabManagementContextMenu, multi: true },
     { provide: TabContextMenuItemProvider, useClass: TaskCompletionContextMenu, multi: true },
     { provide: TabRecoveryProvider, useClass: SplitTabRecoveryProvider, multi: true },
+    { provide: CLIHandler, useClass: ProfileCLIHandler, multi: true },
     { provide: CLIHandler, useClass: LastCLIHandler, multi: true },
     { provide: PERFECT_SCROLLBAR_CONFIG, useValue: { suppressScrollX: true } },
     { provide: FileProvider, useClass: VaultFileProvider, multi: true },
@@ -109,7 +110,7 @@ export default class AppModule { // eslint-disable-line @typescript-eslint/no-ex
     constructor (app: AppService, config: ConfigService, platform: PlatformService) {
         app.ready$.subscribe(() => {
             if (config.store.enableWelcomeTab) {
-                app.openNewTabRaw(WelcomeTabComponent)
+                app.openNewTabRaw({ type: WelcomeTabComponent })
             }
         })
 

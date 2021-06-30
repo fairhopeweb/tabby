@@ -81,12 +81,12 @@ export class SerialService {
             if (lastConnection) {
                 options.push({
                     name: lastConnection.name,
-                    icon: 'history',
+                    icon: 'fas fa-history',
                     callback: () => this.connect(lastConnection),
                 })
                 options.push({
                     name: 'Clear last connection',
-                    icon: 'eraser',
+                    icon: 'fas fa-eraser',
                     callback: () => {
                         window.localStorage.lastSerialConnection = null
                     },
@@ -98,7 +98,7 @@ export class SerialService {
             options.push({
                 name: port.name,
                 description: port.description,
-                icon: 'arrow-right',
+                icon: 'fas fa-arrow-right',
                 callback: () => this.connectFoundPort(port),
             })
         }
@@ -114,13 +114,16 @@ export class SerialService {
         options.push({
             name: 'Manage connections',
             icon: 'cog',
-            callback: () => this.app.openNewTabRaw(SettingsTabComponent, { activeTab: 'serial' }),
+            callback: () => this.app.openNewTabRaw({
+                type: SettingsTabComponent,
+                inputs: { activeTab: 'serial' },
+            }),
         })
 
         options.push({
             name: 'Quick connect',
             freeInputPattern: 'Open device: %s...',
-            icon: 'arrow-right',
+            icon: 'fas fa-arrow-right',
             callback: query => this.quickConnect(query),
         })
 
@@ -130,10 +133,10 @@ export class SerialService {
 
     async connect (connection: SerialConnection): Promise<SerialTabComponent> {
         try {
-            const tab = this.app.openNewTab(
-                SerialTabComponent,
-                { connection }
-            ) as SerialTabComponent
+            const tab = this.app.openNewTab({
+                type: SerialTabComponent,
+                inputs: { connection },
+            })
             if (connection.color) {
                 (this.app.getParentTab(tab) ?? tab).color = connection.color
             }

@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core'
-import { HotkeyDescription, HotkeyProvider } from 'tabby-core'
-import { TerminalService } from './services/terminal.service'
+import { HotkeyDescription, HotkeyProvider, ProfilesService } from 'tabby-core'
 
 /** @hidden */
 @Injectable()
@@ -13,15 +12,15 @@ export class LocalTerminalHotkeyProvider extends HotkeyProvider {
     ]
 
     constructor (
-        private terminal: TerminalService,
+        private profilesService: ProfilesService,
     ) { super() }
 
     async provide (): Promise<HotkeyDescription[]> {
-        const profiles = await this.terminal.getProfiles()
+        const profiles = await this.profilesService.getProfiles()
         return [
             ...this.hotkeys,
             ...profiles.map(profile => ({
-                id: `profile.${this.terminal.getProfileID(profile)}`,
+                id: `profile.${profile.id}`,
                 name: `New tab: ${profile.name}`,
             })),
         ]

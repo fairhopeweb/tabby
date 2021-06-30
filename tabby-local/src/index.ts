@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms'
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap'
 import { ToastrModule } from 'ngx-toastr'
 
-import TabbyCorePlugin, { HostAppService, ToolbarButtonProvider, TabRecoveryProvider, ConfigProvider, HotkeysService, HotkeyProvider, TabContextMenuItemProvider, CLIHandler, ConfigService } from 'tabby-core'
+import TabbyCorePlugin, { HostAppService, ToolbarButtonProvider, TabRecoveryProvider, ConfigProvider, HotkeysService, HotkeyProvider, TabContextMenuItemProvider, CLIHandler, ConfigService, ProfileProvider, ProfilesService } from 'tabby-core'
 import TabbyTerminalModule from 'tabby-terminal'
 import TabbyElectronPlugin from 'tabby-electron'
 import { SettingsTabProvider } from 'tabby-settings'
@@ -13,6 +13,7 @@ import { TerminalTabComponent } from './components/terminalTab.component'
 import { ShellSettingsTabComponent } from './components/shellSettingsTab.component'
 import { EditProfileModalComponent } from './components/editProfileModal.component'
 import { EnvironmentEditorComponent } from './components/environmentEditor.component'
+import { ProfilesSettingsTabComponent } from './components/profilesSettingsTab.component'
 
 import { TerminalService } from './services/terminal.service'
 import { DockMenuService } from './services/dockMenu.service'
@@ -20,13 +21,12 @@ import { DockMenuService } from './services/dockMenu.service'
 import { ButtonProvider } from './buttonProvider'
 import { RecoveryProvider } from './recoveryProvider'
 import { ShellProvider } from './api'
-import { ShellSettingsTabProvider } from './settings'
+import { ProfilesSettingsTabProvider, ShellSettingsTabProvider } from './settings'
 import { TerminalConfigProvider } from './config'
 import { LocalTerminalHotkeyProvider } from './hotkeys'
 import { NewTabContextMenu, SaveAsProfileContextMenu } from './tabContextMenu'
 
 import { CmderShellProvider } from './shells/cmder'
-import { CustomShellProvider } from './shells/custom'
 import { Cygwin32ShellProvider } from './shells/cygwin32'
 import { Cygwin64ShellProvider } from './shells/cygwin64'
 import { GitBashShellProvider } from './shells/gitBash'
@@ -39,6 +39,7 @@ import { WindowsStockShellsProvider } from './shells/windowsStock'
 import { WSLShellProvider } from './shells/wsl'
 
 import { AutoOpenTabCLIHandler, OpenPathCLIHandler, TerminalCLIHandler } from './cli'
+import { LocalProfilesService } from './profiles'
 
 /** @hidden */
 @NgModule({
@@ -53,6 +54,7 @@ import { AutoOpenTabCLIHandler, OpenPathCLIHandler, TerminalCLIHandler } from '.
     ],
     providers: [
         { provide: SettingsTabProvider, useClass: ShellSettingsTabProvider, multi: true },
+        { provide: SettingsTabProvider, useClass: ProfilesSettingsTabProvider, multi: true },
 
         { provide: ToolbarButtonProvider, useClass: ButtonProvider, multi: true },
         { provide: TabRecoveryProvider, useClass: RecoveryProvider, multi: true },
@@ -65,12 +67,13 @@ import { AutoOpenTabCLIHandler, OpenPathCLIHandler, TerminalCLIHandler } from '.
         { provide: ShellProvider, useClass: WindowsStockShellsProvider, multi: true },
         { provide: ShellProvider, useClass: PowerShellCoreShellProvider, multi: true },
         { provide: ShellProvider, useClass: CmderShellProvider, multi: true },
-        { provide: ShellProvider, useClass: CustomShellProvider, multi: true },
         { provide: ShellProvider, useClass: Cygwin32ShellProvider, multi: true },
         { provide: ShellProvider, useClass: Cygwin64ShellProvider, multi: true },
         { provide: ShellProvider, useClass: GitBashShellProvider, multi: true },
         { provide: ShellProvider, useClass: POSIXShellsProvider, multi: true },
         { provide: ShellProvider, useClass: WSLShellProvider, multi: true },
+
+        { provide: ProfileProvider, useClass: LocalProfilesService, multi: true },
 
         { provide: TabContextMenuItemProvider, useClass: NewTabContextMenu, multi: true },
         { provide: TabContextMenuItemProvider, useClass: SaveAsProfileContextMenu, multi: true },
@@ -86,11 +89,13 @@ import { AutoOpenTabCLIHandler, OpenPathCLIHandler, TerminalCLIHandler } from '.
     ],
     entryComponents: [
         TerminalTabComponent,
+        ProfilesSettingsTabComponent,
         ShellSettingsTabComponent,
         EditProfileModalComponent,
     ] as any[],
     declarations: [
         TerminalTabComponent,
+        ProfilesSettingsTabComponent,
         ShellSettingsTabComponent,
         EditProfileModalComponent,
         EnvironmentEditorComponent,
@@ -104,6 +109,7 @@ export default class LocalTerminalModule { // eslint-disable-line @typescript-es
     private constructor (
         hotkeys: HotkeysService,
         terminal: TerminalService,
+        profilesService: ProfilesService,
         hostApp: HostAppService,
         dockMenu: DockMenuService,
         config: ConfigService,
@@ -116,9 +122,10 @@ export default class LocalTerminalModule { // eslint-disable-line @typescript-es
                 hostApp.newWindow()
             }
             if (hotkey.startsWith('profile.')) {
-                const profile = await terminal.getProfileByID(hotkey.split('.')[1])
+                const id = hotkey.split('.')[1]
+                const profile = (await profilesService.getProfiles()).find(x => x.id === id)
                 if (profile) {
-                    terminal.openTabWithOptions(profile.sessionOptions)
+                    profilesService.openNewTabForProfile(profile)
                 }
             }
         })

@@ -1,5 +1,6 @@
-import { Observable, Subject, AsyncSubject } from 'rxjs'
+import { v4 as uuidv4 } from 'uuid'
 import * as yaml from 'js-yaml'
+import { Observable, Subject, AsyncSubject } from 'rxjs'
 import { Injectable, Inject } from '@angular/core'
 import { ConfigProvider } from '../api/configProvider'
 import { PlatformService } from '../api/platform'
@@ -249,6 +250,26 @@ export class ConfigService {
                 }
             }
             config.version = 1
+        }
+        if (config.version < 2) {
+            if (config.terminal?.recoverTabs !== undefined) {
+                config.recoverTabs = config.terminal.recoverTabs
+                delete config.terminal.recoverTabs
+            }
+            for (const profile of config.terminal?.profiles ?? []) {
+                if (profile.sessionOptions) {
+                    profile.options = profile.sessionOptions
+                    delete profile.sessionOptions
+                }
+                profile.type = 'local'
+                profile.id = `local:custom:${uuidv4()}`
+            }
+            if (config.terminal?.profiles) {
+                config.profiles = config.terminal.profiles
+                delete config.terminal.profiles
+                delete config.terminal.environment
+            }
+            //config.version = 2
         }
     }
 

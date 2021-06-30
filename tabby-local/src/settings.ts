@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core'
 import { SettingsTabProvider } from 'tabby-settings'
 
+import { ProfilesSettingsTabComponent } from './components/profilesSettingsTab.component'
 import { ShellSettingsTabComponent } from './components/shellSettingsTab.component'
 
 /** @hidden */
@@ -12,5 +13,17 @@ export class ShellSettingsTabProvider extends SettingsTabProvider {
 
     getComponentType (): any {
         return ShellSettingsTabComponent
+    }
+}
+
+/** @hidden */
+@Injectable()
+export class ProfilesSettingsTabProvider extends SettingsTabProvider {
+    id = 'profiles'
+    icon = 'window-restore'
+    title = 'Profiles'
+
+    getComponentType (): any {
+        return ProfilesSettingsTabComponent
     }
 }

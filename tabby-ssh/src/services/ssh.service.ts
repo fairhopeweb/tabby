@@ -175,7 +175,7 @@ export class SSHService {
             options.push({
                 name: connection.name,
                 description: connection.host,
-                icon: 'history',
+                icon: 'fas fa-history',
                 callback: () => this.connect(connection),
             })
         }
@@ -183,7 +183,7 @@ export class SSHService {
         if (recentConnections.length) {
             options.push({
                 name: 'Clear recent connections',
-                icon: 'eraser',
+                icon: 'fas fa-eraser',
                 callback: () => {
                     this.config.store.ssh.recentConnections = []
                     this.config.save()
@@ -211,7 +211,7 @@ export class SSHService {
                 options.push({
                     name: (group.name ? `${group.name} / ` : '') + connection.name,
                     description: connection.host,
-                    icon: 'desktop',
+                    icon: 'fas fa-desktop',
                     callback: () => this.connect(connection),
                 })
             }
@@ -220,13 +220,16 @@ export class SSHService {
         options.push({
             name: 'Manage connections',
             icon: 'cog',
-            callback: () => this.app.openNewTabRaw(SettingsTabComponent, { activeTab: 'ssh' }),
+            callback: () => this.app.openNewTabRaw({
+                type: SettingsTabComponent,
+                inputs: { activeTab: 'ssh' },
+            }),
         })
 
         options.push({
             name: 'Quick connect',
             freeInputPattern: 'Connect to "%s"...',
-            icon: 'arrow-right',
+            icon: 'fas fa-arrow-right',
             callback: query => this.quickConnect(query),
         })
 
@@ -236,10 +239,10 @@ export class SSHService {
 
     async connect (connection: SSHConnection): Promise<SSHTabComponent> {
         try {
-            const tab = this.app.openNewTab(
-                SSHTabComponent,
-                { connection }
-            ) as SSHTabComponent
+            const tab = this.app.openNewTab({
+                type: SSHTabComponent,
+                inputs: { connection },
+            }) as SSHTabComponent
             if (connection.color) {
                 (this.app.getParentTab(tab) ?? tab).color = connection.color
             }
